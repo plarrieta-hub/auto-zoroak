@@ -1,176 +1,119 @@
 <!DOCTYPE html>
-
-<html lang="es">
+<html lang="eu">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>AUTO ZOROAK</title>
-
 <style>
-
-body{
-    font-family:Arial,sans-serif;
-    text-align:center;
-    background:#f5f5f5;
-    margin:0;
-    padding:20px;
-}
-
-h1{
-    color:#1976d2;
-}
-
-button{
-    padding:15px 25px;
-    font-size:20px;
-    margin:10px;
-    cursor:pointer;
-}
-
-#estado{
-    margin-top:20px;
-    font-size:22px;
-    font-weight:bold;
-}
-
-.teklak{
-    margin-top:30px;
-    font-size:30px;
-}
-
-.koadroa{
-    background:white;
-    max-width:700px;
-    margin:auto;
-    padding:25px;
-    border-radius:15px;
-    box-shadow:0 0 15px rgba(0,0,0,0.2);
-}
-
-.aktibo{
-    color:green;
-}
-
+body{font-family:Arial,sans-serif;text-align:center;background:#f5f5f5;margin:0;padding:20px}
+h1{color:#1976d2}
+button{padding:14px 22px;font-size:18px;margin:8px;cursor:pointer}
+.koadroa{background:white;max-width:750px;margin:auto;padding:25px;border-radius:15px;box-shadow:0 0 15px rgba(0,0,0,.2)}
+#estado{margin-top:15px;font-size:22px;font-weight:bold}
+.aktibo{color:green}
+.teklak{margin-top:25px;font-size:28px}
+#timer{font-size:54px;font-weight:bold;margin:25px 0;color:#111}
 </style>
-
 </head>
-
 <body>
 
 <div class="koadroa">
-
 <h1>🚗 AUTO ZOROAK</h1>
 
-<button id="connectBtn">
-KONEKTATU HC-06
-</button>
+<button id="connectBtn">KONEKTATU HC-06</button>
+<div id="estado">Deskonektatuta</div>
 
-<div id="estado">
-Deskonektatuta
-</div>
+<div id="timer">00:00.00</div>
+<button id="startTimer">HASI KRONOMETROA</button>
+<button id="stopTimer">GELDITU KRONOMETROA</button>
+<button id="resetTimer">BERREZARRI</button>
 
 <div class="teklak">
-
 ↑ Aurrera<br><br>
-
-← Ezkerra     
-↓ Atzera
-     → Eskuina
-
+← Ezkerra &nbsp;&nbsp;&nbsp; ↓ Atzera &nbsp;&nbsp;&nbsp; → Eskuina
 <br><br>
-
-ESPAZIOA = GELDITU
-
+Tekla askatzean autoa gelditzen da
 </div>
-
 </div>
 
 <script>
-
 let port;
 let writer;
-
 const estado=document.getElementById("estado");
 
 async function bidali(komandoa){
-
-    if(!writer) return;
-
-    await writer.write(
-        new TextEncoder().encode(
-            komandoa.toString()
-        )
-    );
+  if(!writer) return;
+  await writer.write(new TextEncoder().encode(komandoa.toString()));
 }
 
-document.getElementById("connectBtn")
-.addEventListener("click", async()=>{
-
-try{
-
-port=await navigator.serial.requestPort();
-
-await port.open({
-    baudRate:9600
-});
-
-writer=port.writable.getWriter();
-
-estado.innerHTML="🟢 Konektatuta";
-estado.classList.add("aktibo");
-
-}catch(err){
-
-alert("Errorea: "+err);
-
-}
-
+document.getElementById("connectBtn").addEventListener("click", async()=>{
+  try{
+    port=await navigator.serial.requestPort();
+    await port.open({baudRate:9600});
+    writer=port.writable.getWriter();
+    estado.innerHTML="🟢 Konektatuta";
+    estado.classList.add("aktibo");
+  }catch(err){
+    alert("Errorea: "+err);
+  }
 });
 
 document.addEventListener("keydown", async(e)=>{
+  if(e.repeat) return;
 
-switch(e.key){
-
-case "ArrowUp":
-await bidali("1");
-break;
-
-case "ArrowDown":
-await bidali("2");
-break;
-
-case "ArrowLeft":
-await bidali("4");
-break;
-
-case "ArrowRight":
-await bidali("3");
-break;
-
-case " ":
-await bidali("5");
-break;
-
-}
-
+  switch(e.key){
+    case "ArrowUp": await bidali("1"); break;
+    case "ArrowDown": await bidali("2"); break;
+    case "ArrowLeft": await bidali("4"); break;
+    case "ArrowRight": await bidali("3"); break;
+    case " ": await bidali("5"); break;
+  }
 });
 
 document.addEventListener("keyup", async(e)=>{
-
-if(
-e.key==="ArrowUp" ||
-e.key==="ArrowDown" ||
-e.key==="ArrowLeft" ||
-e.key==="ArrowRight"
-){
-
-await bidali("5");
-
-}
-
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)){
+    await bidali("5");
+  }
 });
 
+let startTime=0;
+let elapsed=0;
+let timerInterval=null;
+
+function formatTime(ms){
+  const cent=Math.floor((ms%1000)/10);
+  const sec=Math.floor(ms/1000)%60;
+  const min=Math.floor(ms/60000);
+  return String(min).padStart(2,"0")+":"+
+         String(sec).padStart(2,"0")+"."+
+         String(cent).padStart(2,"0");
+}
+
+function updateTimer(){
+  const now=Date.now();
+  document.getElementById("timer").textContent=formatTime(elapsed + (now-startTime));
+}
+
+document.getElementById("startTimer").addEventListener("click",()=>{
+  if(timerInterval) return;
+  startTime=Date.now();
+  timerInterval=setInterval(updateTimer,30);
+});
+
+document.getElementById("stopTimer").addEventListener("click",()=>{
+  if(!timerInterval) return;
+  elapsed += Date.now()-startTime;
+  clearInterval(timerInterval);
+  timerInterval=null;
+  document.getElementById("timer").textContent=formatTime(elapsed);
+});
+
+document.getElementById("resetTimer").addEventListener("click",()=>{
+  clearInterval(timerInterval);
+  timerInterval=null;
+  elapsed=0;
+  document.getElementById("timer").textContent="00:00.00";
+});
 </script>
 
 </body>
