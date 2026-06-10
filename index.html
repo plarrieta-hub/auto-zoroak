@@ -3,30 +3,97 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AUTO ZOROAK</title>
+<title>AUTO ZOROAK v2.0</title>
+
 <style>
-body{font-family:Arial,sans-serif;text-align:center;background:#f5f5f5;margin:0;padding:20px}
-h1{color:#1976d2}
-button{padding:14px 22px;font-size:18px;margin:8px;cursor:pointer}
-.koadroa{background:white;max-width:750px;margin:auto;padding:25px;border-radius:15px;box-shadow:0 0 15px rgba(0,0,0,.2)}
-#estado{margin-top:15px;font-size:22px;font-weight:bold}
+body{
+  font-family:Arial,sans-serif;
+  text-align:center;
+  background:#f3f6fb;
+  margin:0;
+  padding:18px;
+}
+.koadroa{
+  background:white;
+  max-width:850px;
+  margin:auto;
+  padding:22px;
+  border-radius:18px;
+  box-shadow:0 0 18px rgba(0,0,0,.2);
+}
+h1{color:#1976d2;margin:8px}
+input{
+  padding:12px;
+  font-size:20px;
+  width:80%;
+  max-width:420px;
+  text-align:center;
+  margin:8px;
+}
+button{
+  padding:13px 22px;
+  font-size:18px;
+  margin:6px;
+  cursor:pointer;
+  border-radius:10px;
+  border:1px solid #aaa;
+}
+#estado{
+  font-size:21px;
+  font-weight:bold;
+  margin:10px;
+}
 .aktibo{color:green}
-.teklak{margin-top:25px;font-size:28px}
-#timer{font-size:54px;font-weight:bold;margin:25px 0;color:#111}
+#countdown{
+  font-size:70px;
+  font-weight:bold;
+  min-height:85px;
+  color:#d32f2f;
+}
+#timer{
+  font-size:58px;
+  font-weight:bold;
+  margin:10px;
+}
+.teklak{
+  font-size:28px;
+  margin:18px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px;
+  font-size:18px;
+}
+th,td{
+  border:1px solid #ccc;
+  padding:8px;
+}
+th{
+  background:#1976d2;
+  color:white;
+}
 </style>
 </head>
+
 <body>
 
 <div class="koadroa">
-<h1>🚗 AUTO ZOROAK</h1>
+
+<h1>🏁 AUTO ZOROAK v2.0</h1>
+
+<input id="teamName" placeholder="Taldearen izena">
+
+<br>
 
 <button id="connectBtn">KONEKTATU HC-06</button>
 <div id="estado">Deskonektatuta</div>
 
+<div id="countdown"></div>
 <div id="timer">00:00.00</div>
-<button id="startTimer">HASI KRONOMETROA</button>
-<button id="stopTimer">GELDITU KRONOMETROA</button>
-<button id="resetTimer">BERREZARRI</button>
+
+<button id="readyBtn">PREST?</button>
+<button id="finishBtn">HELMUGA</button>
 
 <div class="teklak">
 ↑ Aurrera<br><br>
@@ -34,12 +101,99 @@ button{padding:14px 22px;font-size:18px;margin:8px;cursor:pointer}
 <br><br>
 Tekla askatzean autoa gelditzen da
 </div>
+
+<h2>🏆 SAILKAPEN OROKORRA</h2>
+
+<table>
+<thead>
+<tr>
+<th>Postua</th>
+<th>Taldea</th>
+<th>Denbora</th>
+</tr>
+</thead>
+<tbody id="rankingBody"></tbody>
+</table>
+
+<br>
+
+<button id="clearBtn">GARBITU SAILKAPENA</button>
+<button id="csvBtn">CSV DESKARGATU</button>
+
 </div>
 
 <script>
 let port;
 let writer;
+
 const estado=document.getElementById("estado");
+const timerDisplay=document.getElementById("timer");
+const countdownDisplay=document.getElementById("countdown");
+const rankingBody=document.getElementById("rankingBody");
+
+let startTime=0;
+let elapsed=0;
+let timerInterval=null;
+let running=false;
+
+let ranking=JSON.parse(localStorage.getItem("autoZoroakRanking") || "[]");
+
+function saveRanking(){
+  localStorage.setItem("autoZoroakRanking", JSON.stringify(ranking));
+}
+
+function formatTime(ms){
+  const cent=Math.floor((ms%1000)/10);
+  const sec=Math.floor(ms/1000)%60;
+  const min=Math.floor(ms/60000);
+  return String(min).padStart(2,"0")+":"+
+         String(sec).padStart(2,"0")+"."+
+         String(cent).padStart(2,"0");
+}
+
+function updateTimer(){
+  const now=Date.now();
+  const total=elapsed+(now-startTime);
+  timerDisplay.textContent=formatTime(total);
+}
+
+function startTimer(){
+  elapsed=0;
+  startTime=Date.now();
+  running=true;
+  clearInterval(timerInterval);
+  timerInterval=setInterval(updateTimer,20);
+}
+
+function stopTimer(){
+  if(!running) return;
+  elapsed += Date.now()-startTime;
+  clearInterval(timerInterval);
+  timerInterval=null;
+  running=false;
+  timerDisplay.textContent=formatTime(elapsed);
+}
+
+function resetTimer(){
+  elapsed=0;
+  running=false;
+  clearInterval(timerInterval);
+  timerInterval=null;
+  timerDisplay.textContent="00:00.00";
+}
+
+function renderRanking(){
+  ranking.sort((a,b)=>a.ms-b.ms);
+  rankingBody.innerHTML="";
+  ranking.forEach((r,i)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=
+      "<td>"+(i+1)+"</td>"+
+      "<td>"+r.team+"</td>"+
+      "<td>"+formatTime(r.ms)+"</td>";
+    rankingBody.appendChild(tr);
+  });
+}
 
 async function bidali(komandoa){
   if(!writer) return;
@@ -76,44 +230,77 @@ document.addEventListener("keyup", async(e)=>{
   }
 });
 
-let startTime=0;
-let elapsed=0;
-let timerInterval=null;
+document.getElementById("readyBtn").addEventListener("click",()=>{
+  const team=document.getElementById("teamName").value.trim();
+  if(!team){
+    alert("Idatzi taldearen izena.");
+    return;
+  }
 
-function formatTime(ms){
-  const cent=Math.floor((ms%1000)/10);
-  const sec=Math.floor(ms/1000)%60;
-  const min=Math.floor(ms/60000);
-  return String(min).padStart(2,"0")+":"+
-         String(sec).padStart(2,"0")+"."+
-         String(cent).padStart(2,"0");
-}
+  resetTimer();
 
-function updateTimer(){
-  const now=Date.now();
-  document.getElementById("timer").textContent=formatTime(elapsed + (now-startTime));
-}
+  let steps=["3","2","1","GO!"];
+  let i=0;
+  countdownDisplay.textContent=steps[i];
 
-document.getElementById("startTimer").addEventListener("click",()=>{
-  if(timerInterval) return;
-  startTime=Date.now();
-  timerInterval=setInterval(updateTimer,30);
+  const interval=setInterval(()=>{
+    i++;
+    if(i<steps.length){
+      countdownDisplay.textContent=steps[i];
+    }else{
+      clearInterval(interval);
+      countdownDisplay.textContent="GO!";
+      startTimer();
+      setTimeout(()=>countdownDisplay.textContent="",800);
+    }
+  },1000);
 });
 
-document.getElementById("stopTimer").addEventListener("click",()=>{
-  if(!timerInterval) return;
-  elapsed += Date.now()-startTime;
-  clearInterval(timerInterval);
-  timerInterval=null;
-  document.getElementById("timer").textContent=formatTime(elapsed);
+document.getElementById("finishBtn").addEventListener("click",()=>{
+  const team=document.getElementById("teamName").value.trim();
+  if(!running){
+    alert("Kronometroa ez dago martxan.");
+    return;
+  }
+
+  stopTimer();
+
+  ranking.push({
+    team:team,
+    ms:elapsed
+  });
+
+  saveRanking();
+  renderRanking();
 });
 
-document.getElementById("resetTimer").addEventListener("click",()=>{
-  clearInterval(timerInterval);
-  timerInterval=null;
-  elapsed=0;
-  document.getElementById("timer").textContent="00:00.00";
+document.getElementById("clearBtn").addEventListener("click",()=>{
+  if(confirm("Sailkapena ezabatu nahi duzu?")){
+    ranking=[];
+    saveRanking();
+    renderRanking();
+  }
 });
+
+document.getElementById("csvBtn").addEventListener("click",()=>{
+  ranking.sort((a,b)=>a.ms-b.ms);
+
+  let csv="Postua,Taldea,Denbora\n";
+
+  ranking.forEach((r,i)=>{
+    csv+=(i+1)+","+r.team+","+formatTime(r.ms)+"\n";
+  });
+
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="auto_zoroak_sailkapena.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+renderRanking();
 </script>
 
 </body>
