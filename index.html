@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AUTO ZOROAK v3.0</title>
+<title>AUTO ZOROAK v3.1</title>
 
 <style>
 *{box-sizing:border-box}
@@ -77,10 +77,17 @@ input{
 
 button{
   position:absolute;
-  border:none;
-  background:transparent;
-  color:transparent;
+  border:none !important;
+  background:transparent !important;
+  color:transparent !important;
+  outline:none !important;
+  box-shadow:none !important;
   cursor:pointer;
+}
+
+button:focus{
+  outline:none !important;
+  box-shadow:none !important;
 }
 
 #connectBtn{
@@ -91,17 +98,17 @@ button{
 }
 
 #readyBtn{
-  left:15.7%;
-  top:64%;
-  width:16%;
-  height:6%;
+  left:17%;
+  top:64.2%;
+  width:14%;
+  height:5.5%;
 }
 
 #finishBtn{
-  left:36.3%;
-  top:64%;
-  width:16.5%;
-  height:6%;
+  left:36%;
+  top:64.2%;
+  width:14.5%;
+  height:5.5%;
 }
 
 #clearBtn{
@@ -120,9 +127,9 @@ button{
 
 #rankingBox{
   position:absolute;
-  left:57.5%;
+  left:56.5%;
   top:38%;
-  width:34%;
+  width:34.5%;
   height:34%;
   overflow-y:auto;
 }
@@ -333,6 +340,9 @@ document.getElementById("finishBtn").addEventListener("click",()=>{
 
   saveRanking();
   renderRanking();
+
+  document.getElementById("teamName").value="";
+  document.getElementById("teamName").focus();
 });
 
 document.getElementById("clearBtn").addEventListener("click",()=>{
