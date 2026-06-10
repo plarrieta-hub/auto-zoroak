@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AUTO ZOROAK v2.0</title>
+<title>AUTO ZOROAK v2.1</title>
 
 <style>
 body{
@@ -13,15 +13,37 @@ body{
   margin:0;
   padding:18px;
 }
+
 .koadroa{
   background:white;
-  max-width:850px;
+  max-width:1200px;
   margin:auto;
   padding:22px;
   border-radius:18px;
   box-shadow:0 0 18px rgba(0,0,0,.2);
 }
+
+.layout{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  align-items:start;
+}
+
+.zutabea{
+  background:#ffffff;
+  padding:15px;
+  border-radius:14px;
+}
+
+@media(max-width:800px){
+  .layout{
+    grid-template-columns:1fr;
+  }
+}
+
 h1{color:#1976d2;margin:8px}
+
 input{
   padding:12px;
   font-size:20px;
@@ -30,6 +52,7 @@ input{
   text-align:center;
   margin:8px;
 }
+
 button{
   padding:13px 22px;
   font-size:18px;
@@ -38,37 +61,50 @@ button{
   border-radius:10px;
   border:1px solid #aaa;
 }
+
 #estado{
   font-size:21px;
   font-weight:bold;
   margin:10px;
 }
+
 .aktibo{color:green}
+
 #countdown{
   font-size:70px;
   font-weight:bold;
   min-height:85px;
   color:#d32f2f;
 }
+
 #timer{
   font-size:58px;
   font-weight:bold;
   margin:10px;
 }
+
 .teklak{
   font-size:28px;
   margin:18px;
 }
+
+.oharra{
+  font-size:18px;
+  color:#555;
+}
+
 table{
   width:100%;
   border-collapse:collapse;
   margin-top:15px;
   font-size:18px;
 }
+
 th,td{
   border:1px solid #ccc;
   padding:8px;
 }
+
 th{
   background:#1976d2;
   color:white;
@@ -80,7 +116,11 @@ th{
 
 <div class="koadroa">
 
-<h1>🏁 AUTO ZOROAK v2.0</h1>
+<h1>🏁 AUTO ZOROAK v2.1</h1>
+
+<div class="layout">
+
+<div class="zutabea">
 
 <input id="teamName" placeholder="Taldearen izena">
 
@@ -99,8 +139,14 @@ th{
 ↑ Aurrera<br><br>
 ← Ezkerra &nbsp;&nbsp;&nbsp; ↓ Atzera &nbsp;&nbsp;&nbsp; → Eskuina
 <br><br>
-Tekla askatzean autoa gelditzen da
+<span class="oharra">Tekla askatzean autoa gelditzen da</span>
+<br>
+<span class="oharra">A = helmuga / kronometroa gelditu</span>
 </div>
+
+</div>
+
+<div class="zutabea">
 
 <h2>🏆 SAILKAPEN OROKORRA</h2>
 
@@ -119,6 +165,10 @@ Tekla askatzean autoa gelditzen da
 
 <button id="clearBtn">GARBITU SAILKAPENA</button>
 <button id="csvBtn">CSV DESKARGATU</button>
+
+</div>
+
+</div>
 
 </div>
 
@@ -221,6 +271,11 @@ document.addEventListener("keydown", async(e)=>{
     case "ArrowLeft": await bidali("4"); break;
     case "ArrowRight": await bidali("3"); break;
     case " ": await bidali("5"); break;
+
+    case "a":
+    case "A":
+      document.getElementById("finishBtn").click();
+      break;
   }
 });
 
@@ -258,6 +313,7 @@ document.getElementById("readyBtn").addEventListener("click",()=>{
 
 document.getElementById("finishBtn").addEventListener("click",()=>{
   const team=document.getElementById("teamName").value.trim();
+
   if(!running){
     alert("Kronometroa ez dago martxan.");
     return;
