@@ -3,131 +3,164 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AUTO ZOROAK v2.1</title>
+<title>AUTO ZOROAK v2.2</title>
 
 <style>
+*{box-sizing:border-box}
+
 body{
-  font-family:Arial,sans-serif;
-  text-align:center;
-  background:#f3f6fb;
   margin:0;
-  padding:18px;
+  background:#111;
+  font-family:Arial,sans-serif;
+  overflow:hidden;
 }
 
-.koadroa{
-  background:white;
-  max-width:1200px;
+#stage{
+  position:relative;
+  width:min(100vw,150vh);
+  aspect-ratio:3/2;
   margin:auto;
-  padding:22px;
-  border-radius:18px;
-  box-shadow:0 0 18px rgba(0,0,0,.2);
+  background-image:url("auto%20zoroak%20berria.png");
+  background-size:100% 100%;
+  background-repeat:no-repeat;
+  background-position:center;
 }
-
-.layout{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:20px;
-  align-items:start;
-}
-
-.zutabea{
-  background:#ffffff;
-  padding:15px;
-  border-radius:14px;
-}
-
-@media(max-width:800px){
-  .layout{
-    grid-template-columns:1fr;
-  }
-}
-
-h1{color:#1976d2;margin:8px}
 
 input{
-  padding:12px;
-  font-size:20px;
-  width:80%;
-  max-width:420px;
+  position:absolute;
+  left:15.8%;
+  top:22.9%;
+  width:31.7%;
+  height:5.4%;
+  font-size:2vw;
   text-align:center;
-  margin:8px;
-}
-
-button{
-  padding:13px 22px;
-  font-size:18px;
-  margin:6px;
-  cursor:pointer;
-  border-radius:10px;
-  border:1px solid #aaa;
+  border:none;
+  background:rgba(255,255,255,0.05);
+  outline:none;
 }
 
 #estado{
-  font-size:21px;
+  position:absolute;
+  left:26%;
+  top:37.1%;
+  width:18%;
+  height:3%;
+  font-size:1.6vw;
   font-weight:bold;
-  margin:10px;
+  color:green;
+  text-align:center;
 }
 
-.aktibo{color:green}
-
 #countdown{
-  font-size:70px;
+  position:absolute;
+  left:27%;
+  top:42.5%;
+  width:20%;
+  height:8%;
+  font-size:4vw;
   font-weight:bold;
-  min-height:85px;
-  color:#d32f2f;
+  color:red;
+  text-align:center;
 }
 
 #timer{
-  font-size:58px;
+  position:absolute;
+  left:20.8%;
+  top:52.5%;
+  width:26%;
+  height:8%;
+  font-size:5vw;
   font-weight:bold;
-  margin:10px;
+  text-align:center;
+  color:black;
 }
 
-.teklak{
-  font-size:28px;
-  margin:18px;
+button{
+  position:absolute;
+  border:none;
+  background:transparent;
+  color:transparent;
+  cursor:pointer;
 }
 
-.oharra{
-  font-size:18px;
-  color:#555;
+#connectBtn{
+  left:15.7%;
+  top:30%;
+  width:32%;
+  height:5.8%;
+}
+
+#readyBtn{
+  left:15.7%;
+  top:64%;
+  width:16%;
+  height:6%;
+}
+
+#finishBtn{
+  left:36.3%;
+  top:64%;
+  width:16.5%;
+  height:6%;
+}
+
+#clearBtn{
+  left:57.5%;
+  top:73.8%;
+  width:16.5%;
+  height:7.2%;
+}
+
+#csvBtn{
+  left:75%;
+  top:73.8%;
+  width:17.2%;
+  height:7.2%;
+}
+
+#rankingBox{
+  position:absolute;
+  left:57.4%;
+  top:36.7%;
+  width:35.6%;
+  height:35.2%;
+  overflow-y:auto;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  margin-top:15px;
-  font-size:18px;
+  font-size:1.55vw;
+  text-align:center;
 }
 
-th,td{
-  border:1px solid #ccc;
-  padding:8px;
+td{
+  height:5.85vh;
+  padding:0.4vw;
+  font-weight:bold;
+  color:black;
+  background:rgba(255,248,220,0.55);
 }
 
-th{
-  background:#1976d2;
-  color:white;
+.pos{width:22%}
+.team{width:43%}
+.time{width:35%}
+
+@media(max-width:900px){
+  table{font-size:2vw}
+  #timer{font-size:6vw}
 }
 </style>
 </head>
 
 <body>
 
-<div class="koadroa">
+<div id="stage">
 
-<h1>🏁 AUTO ZOROAK v2.1</h1>
+<input id="teamName" placeholder="">
 
-<div class="layout">
-
-<div class="zutabea">
-
-<input id="teamName" placeholder="Taldearen izena">
-
-<br>
-
-<button id="connectBtn">KONEKTATU HC-06</button>
-<div id="estado">Deskonektatuta</div>
+<button id="connectBtn">KONEKTATU</button>
+<div id="estado"></div>
 
 <div id="countdown"></div>
 <div id="timer">00:00.00</div>
@@ -135,40 +168,14 @@ th{
 <button id="readyBtn">PREST?</button>
 <button id="finishBtn">HELMUGA</button>
 
-<div class="teklak">
-↑ Aurrera<br><br>
-← Ezkerra &nbsp;&nbsp;&nbsp; ↓ Atzera &nbsp;&nbsp;&nbsp; → Eskuina
-<br><br>
-<span class="oharra">Tekla askatzean autoa gelditzen da</span>
-<br>
-<span class="oharra">A = helmuga / kronometroa gelditu</span>
+<div id="rankingBox">
+  <table>
+    <tbody id="rankingBody"></tbody>
+  </table>
 </div>
 
-</div>
-
-<div class="zutabea">
-
-<h2>🏆 SAILKAPEN OROKORRA</h2>
-
-<table>
-<thead>
-<tr>
-<th>Postua</th>
-<th>Taldea</th>
-<th>Denbora</th>
-</tr>
-</thead>
-<tbody id="rankingBody"></tbody>
-</table>
-
-<br>
-
-<button id="clearBtn">GARBITU SAILKAPENA</button>
-<button id="csvBtn">CSV DESKARGATU</button>
-
-</div>
-
-</div>
+<button id="clearBtn">GARBITU</button>
+<button id="csvBtn">CSV</button>
 
 </div>
 
@@ -203,8 +210,7 @@ function formatTime(ms){
 
 function updateTimer(){
   const now=Date.now();
-  const total=elapsed+(now-startTime);
-  timerDisplay.textContent=formatTime(total);
+  timerDisplay.textContent=formatTime(elapsed+(now-startTime));
 }
 
 function startTimer(){
@@ -238,9 +244,9 @@ function renderRanking(){
   ranking.forEach((r,i)=>{
     const tr=document.createElement("tr");
     tr.innerHTML=
-      "<td>"+(i+1)+"</td>"+
-      "<td>"+r.team+"</td>"+
-      "<td>"+formatTime(r.ms)+"</td>";
+      "<td class='pos'>"+(i+1)+"</td>"+
+      "<td class='team'>"+r.team+"</td>"+
+      "<td class='time'>"+formatTime(r.ms)+"</td>";
     rankingBody.appendChild(tr);
   });
 }
@@ -255,8 +261,7 @@ document.getElementById("connectBtn").addEventListener("click", async()=>{
     port=await navigator.serial.requestPort();
     await port.open({baudRate:9600});
     writer=port.writable.getWriter();
-    estado.innerHTML="🟢 Konektatuta";
-    estado.classList.add("aktibo");
+    estado.textContent="Konektatuta";
   }catch(err){
     alert("Errorea: "+err);
   }
